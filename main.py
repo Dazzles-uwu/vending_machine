@@ -2,8 +2,41 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+
+class Item:
+    def __init__(self, itemname):
+        self.name = itemname
+
+    def __str__(self):
+        return f"Item Type: {self.name}"
+
+
+class Cart:
+    def __init__(self, itemname):
+        self.name = itemname
+
+    def __str__(self):
+        return f"Item Type: {self.name}"
+
+
+class Machine:
+    def __init__(self, itemname):
+        self.name = itemname
+
+    def __str__(self):
+        return f"Item Type: {self.name}"
+
+
+class Transaction:
+    def __init__(self, itemname):
+        self.name = itemname
+
+    def __str__(self):
+        return f"Item Type: {self.name}"
+
+
 def main_menu_list():
-    print("Welcome to the Vending Machine!")
+    print("You are in the Main Menu!")
     print("Please choose one of the following options")
     print("1. New Transaction")
     print("2. List of Products")
@@ -32,8 +65,9 @@ def main_menu():
 
 
 def startup():
-    print("Welcome to Monash University Vending Machine")
+    print("Welcome to Monash University Vending Machine\n")
     display_main_menu()
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
