@@ -44,34 +44,71 @@ class Transaction:
                f"Payment amount: {self.payment}\n"
 
 
-# Add this in later
+# Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
+def chosen_items_plus_running_cost():
+    cart = {
+        "coffee": {"quantity": 3, "price": 2.20},
+        "tea": {"quantity": 1, "price": 2.20},
+        "juice": {"quantity": 5, "price": 2.20}
+    }
+
+    print("\nItems currently in cart:")
+    if not cart:
+        print("NO ITEMS CURRENTLY IN YOUR CART")
+    else:
+        overall_price = 0
+        for keys, values in cart.items():
+            print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${values["price"]}')
+            overall_price += values["price"] * int(values["quantity"])
+        print("Total Price: $", overall_price)
+
+
+# U-001 / New Transaction can be started
 def new_transaction():
+    print("Welcome to a new transaction")
     while True:
-        print("Welcome to a new transaction")
-        break
+        chosen_items_plus_running_cost()
+        display_list_of_products()
+        print("Available Options")
+        print("1. Add item to Cart")
+        print("2. Remove item from Cart")
+        print("3. Continue / Finalise Order")
+        print("4. Cancel / Reset Transaction")
+        option = input("What would you like to do?: ")
+
+        if option == "4":
+            break
+        else:
+            print("Invalid choice")
 
 
-# HardCoded for now / U-002
+# HardCoded for now / U-002 / S-002
 def display_list_of_products():
-    dict_of_items = {"coffee": ["3", "2.20"], "tea": ["0", "2.20"], "juice": ["200", "2.20"]}
+    dict_of_items = {
+        "coffee": {"stock": 200, "price": 2.20},
+        "tea": {"stock": 0, "price": 2.20},
+        "juice": {"stock": 405, "price": 2.20},
+        "coke": {"stock": 32405, "price": 2.20}
+    }
 
     print("\nList of Vending Machine Products")
     for keys, values in dict_of_items.items():
-        if int(values[0]) <= 0:
+        if int(values["stock"]) <= 0:
             print(f'{keys.capitalize():8} ALERT PRODUCT OUT OF STOCK')
         else:
-            print(f'{keys.capitalize():8} Available Amount: {values[0]:5} Price: ${values[1]}')
+            print(f'{keys.capitalize():8} Available Amount:{values["stock"]: 7}    Price: ${values["price"]}')
     print("\n")
 
+
 def main_menu_list():
-    print("You are in the Main Menu!")
+    print("\nYou are in the Main Menu!")
     print("Please choose one of the following options")
     print("1. New Transaction")
     print("2. List of Products")
     print("3. Machine Status")
     print("4. Statistical Report")
     print("5. Reset")
-    print("6. Exit")
+    print("6. Exit\n")
 
 
 def display_main_menu():
