@@ -152,14 +152,20 @@ def new_transaction():
         print("Available Options")
         print("1. Add item to Cart")
         print("2. Remove item from Cart")
-        print("3. Continue / Finalise Order")
-        print("4. Cancel / Reset Transaction")
+        print("3. List of Products")
+        print("4. Continue / Finalise Order")
+        print("5. Go back to Main Menu")
+        # NEED TO ADD Have an option to reset
         option = input("What would you like to do?: ")
 
         if option == "1" or option == "2":
             chosen_items_plus_running_cost()
             add_or_remove_items_from_cart(option)
+        elif option == "3":
+            display_list_of_products()
         elif option == "4":
+            print("Continue")
+        elif option == "5":
             break
         else:
             print("Invalid choice")
@@ -183,7 +189,7 @@ def main_menu_list():
     print("2. List of Products")
     print("3. Machine Status")
     print("4. Statistical Report")
-    print("5. Reset")
+    print("5. Reset System")
     print("6. Exit\n")
 
 
@@ -195,6 +201,7 @@ def display_main_menu():
         choice = input("Select an Option: ")
 
         if str(choice).lower() == "1":
+            # Need to check if the cart has items. If so, ask the user if they want to restart. Else keep the cart
             # Start Transaction
             new_transaction()
         elif str(choice).lower() == "2":
