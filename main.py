@@ -2,6 +2,17 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+cart = {
+    "coffee": {"quantity": 23, "price": 2.20}
+}
+
+dict_of_items = {
+    "coffee": {"stock": 200, "price": 2.20},
+    "tea": {"stock": 0, "price": 2.20},
+    "juice": {"stock": 405, "price": 2.20},
+    "coke": {"stock": 32405, "price": 2.20}
+}
+
 
 class Item:
     def __init__(self, item_name, item_stock, item_price):
@@ -16,8 +27,8 @@ class Item:
 
 
 class Cart:
-    def __init__(self, list_of_items):
-        self.cart_items = list_of_items
+    def __init__(self, cart_items: dict):
+        self.cart_items = cart_items
 
     def __str__(self):
         return f"Cart contains: {self.cart_items}"
@@ -46,12 +57,6 @@ class Transaction:
 
 # Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
 def chosen_items_plus_running_cost():
-    cart = {
-        "coffee": {"quantity": 3, "price": 2.20},
-        "tea": {"quantity": 1, "price": 2.20},
-        "juice": {"quantity": 5, "price": 2.20}
-    }
-
     print("\nItems currently in cart:")
     if not cart:
         print("NO ITEMS CURRENTLY IN YOUR CART")
@@ -63,8 +68,83 @@ def chosen_items_plus_running_cost():
         print("Total Price: $", overall_price)
 
 
+# Add or remove an item from the Cart
+def add_or_remove_items_from_cart(add_or_remove_option):
+    item_has_been_chosen = False
+    item_quantity_has_been_chosen = False
+
+    # Checks if there is nothing in Cart and User chose to remove an item
+    if not cart and add_or_remove_option == "2":
+        print("There is NOTHING in your CART to remove!")
+        return None
+
+    while not item_has_been_chosen:
+        if add_or_remove_option == "1":
+            print("What ITEM would you like to be ADDED into your Cart?")
+        elif add_or_remove_option == "2":
+            print("What ITEM would you like to be REMOVED into your Cart?")
+        else:
+            print("Not a Valid option")
+        item_chosen = input("Item: ").lower()
+
+        if add_or_remove_option == "1":
+            if item_chosen in dict_of_items.keys():
+                while not item_quantity_has_been_chosen:
+                    print("How many", item_chosen, "would you like to be ADDED to your cart?")
+                    quantity_to_be_added = input("Quantity to be ADDED")
+                    if quantity_to_be_added.isdigit():
+                        # checks if there are enough stocks to buy
+                        if dict_of_items[item_chosen]["stock"] - int(quantity_to_be_added) >= 0:
+                            # if item has already been added to the cart, simply add the quantity user wants
+                            if item_chosen in cart.keys():
+                                cart[item_chosen]["quantity"] += int(quantity_to_be_added)
+                            # if the item has NOT been added to the cart, create a key and its value
+                            else:
+                                cart[item_chosen] = {
+                                    "quantity": int(quantity_to_be_added),
+                                    "price": dict_of_items[item_chosen]["price"]
+                                    }
+                            item_has_been_chosen = True
+                            item_quantity_has_been_chosen = True
+                        # If there are no stocks available to buy, it will not allow purchase
+                        elif dict_of_items[item_chosen]["stock"] <= 0:
+                            print("There are currently NO stock of", item_chosen, "left")
+                            item_has_been_chosen = True
+                            item_quantity_has_been_chosen = True
+                        else:
+                            print("Not enough stock to add")
+                    else:
+                        print("Must be a number")
+            else:
+                print("Not a Valid item")
+        elif add_or_remove_option == "2":
+            if item_chosen in cart.keys():
+                while not item_quantity_has_been_chosen:
+                    print("How many", item_chosen, "would you like to be REMOVED to your cart?")
+                    quantity_to_be_removed = input("Quantity to be REMOVED")
+                    if quantity_to_be_removed.isdigit():
+                        # Subtracts the amount of quantity in the cart
+                        if cart[item_chosen]["quantity"] - int(quantity_to_be_removed) > 0:
+                            cart[item_chosen]["quantity"] -= int(quantity_to_be_removed)
+                            item_has_been_chosen = True
+                            item_quantity_has_been_chosen = True
+                        # Removes the item from the Cart entirely
+                        elif cart[item_chosen]["quantity"] - int(quantity_to_be_removed) == 0:
+                            del cart[item_chosen]
+                            item_has_been_chosen = True
+                            item_quantity_has_been_chosen = True
+                        else:
+                            print("Quantity cannot go below 0")
+                    else:
+                        print("Must be a number")
+            else:
+                print("Not a Valid item")
+
+
 # U-001 / New Transaction can be started
 def new_transaction():
+    # Temp cart dict until a class is implemented
+
     print("Welcome to a new transaction")
     while True:
         chosen_items_plus_running_cost()
@@ -76,7 +156,10 @@ def new_transaction():
         print("4. Cancel / Reset Transaction")
         option = input("What would you like to do?: ")
 
-        if option == "4":
+        if option == "1" or option == "2":
+            chosen_items_plus_running_cost()
+            add_or_remove_items_from_cart(option)
+        elif option == "4":
             break
         else:
             print("Invalid choice")
@@ -84,13 +167,6 @@ def new_transaction():
 
 # HardCoded for now / U-002 / S-002
 def display_list_of_products():
-    dict_of_items = {
-        "coffee": {"stock": 200, "price": 2.20},
-        "tea": {"stock": 0, "price": 2.20},
-        "juice": {"stock": 405, "price": 2.20},
-        "coke": {"stock": 32405, "price": 2.20}
-    }
-
     print("\nList of Vending Machine Products")
     for keys, values in dict_of_items.items():
         if int(values["stock"]) <= 0:
