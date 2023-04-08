@@ -1,19 +1,18 @@
-# This is a sample Python script.
+class Payment:
+    def __init__(self):
+        self.inserted_coin = 0
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-cart = {
-    "coffee": {"quantity": 23, "price": 2.20}
-}
+    def __str__(self):
+        return f"Amount of Coin User has paid: {self.inserted_coin}"
 
-dict_of_items = {
-    "coffee": {"stock": 200, "price": 2.20},
-    "tea": {"stock": 0, "price": 2.20},
-    "juice": {"stock": 405, "price": 2.20},
-    "coke": {"stock": 32405, "price": 2.20}
-}
+    def add_coins(self, inserted_amount):
+        self.inserted_coin += inserted_amount
 
-# Add a class for Coins Inserted
+    def current_coin_amount_in_dollars(self):
+        return "$%.2f" % (self.inserted_coin/100)
+
+    def current_coin_amount_in_cents(self):
+        return self.inserted_coin
 
 
 class Item:
@@ -35,13 +34,21 @@ class Cart:
     def __str__(self):
         return f"Cart contains: {self.cart_items}"
 
+    def cart(self):
+        return dict(self.cart_items)
+
 
 class Machine:
-    def __init__(self, status):
+    def __init__(self, status, coins):
         self.status = status
+        self.coins = coins
 
     def __str__(self):
-        return f"Machine Status: {self.status}"
+        return f"Machine Status: {self.status}\n" \
+               f"Coin amount: {self.coins}"
+
+    def check_coin_amount_in_machine(self):
+        return int(self.coins)
 
 
 class Transaction:
@@ -55,6 +62,20 @@ class Transaction:
                f"Items Purchased: {self.items_purchased}\n" \
                f"Date Purchased: {self.date}\n" \
                f"Payment amount: {self.payment}\n"
+
+
+cart = {
+    "coffee": {"quantity": 23, "price": 2.20}
+}
+
+dict_of_items = {
+    "coffee": {"stock": 200, "price": 2.20},
+    "tea": {"stock": 0, "price": 2.20},
+    "juice": {"stock": 405, "price": 2.20},
+    "coke": {"stock": 32405, "price": 2.20}
+}
+
+user_payment = Payment()
 
 
 # Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
@@ -143,9 +164,75 @@ def add_or_remove_items_from_cart(add_or_remove_option):
                 print("Not a Valid item")
 
 
+def insert_coins_into_machine():
+    global user_payment
+    while True:
+        print("\nInsert Coin Menu")
+        current_user_payment()
+        print("Please choose one of the following options")
+        print("1. Insert coin")
+        print("2. Finish inserting coin / Back to Finalise Purchase Menu")
+        option = input("What would you like to do?: ")
+        if option == "1":
+            print("\nPlease enter the coin value you wish to enter (20, 50, 100, 200) in cents")
+            coin_value = input("Coin Value: ")
+            if coin_value == "20" or coin_value == "50" or coin_value == "100" or coin_value == "200":
+                print("You have entered:", coin_value)
+                coin_amount = input("How many " + coin_value + " coins would you like to enter"
+                                                               " in the vending machine?: ")
+                if coin_amount.isdigit():
+                    if int(coin_amount) < 0:
+                        print("Amount cannot be lower than 0")
+                    else:
+                        user_payment.add_coins(int(coin_value) * int(coin_amount))
+                else:
+                    print("Not a valid Coin amount, please try again")
+            else:
+                print("Not a valid Coin value, please try again")
+        elif option == "2":
+            break
+        else:
+            print("Please enter a valid input")
+
+
+def current_user_payment():
+    print("\nCurrent Inserted Payment:", user_payment.current_coin_amount_in_dollars(), "\n")
+
+
+# Finalise Purchase menu
+def continue_and_finalise_purchase():
+    while True:
+        chosen_items_plus_running_cost()
+        current_user_payment()
+
+        print("\nFinalise Purchase Menu")
+        print("1. Continue to buy / Change Order")
+        print("2. Insert Coins")
+        print("3. Confirm")
+        print("4. Cancel / Reset Transaction")
+        option = input("What would you like to do?: ")
+
+        if option == "1":
+            new_transaction(False)
+            break
+        elif option == "2":
+            insert_coins_into_machine()
+        elif option == "3":
+            print("You have confirmed")
+        elif option == "4":
+            cart.clear()
+            print("Your cart has been cleared")
+            new_transaction(True)
+            break
+        else:
+            print("invalid choice")
+
+
 # U-001 / New Transaction can be started
-def new_transaction():
-    print("Welcome to a new transaction")
+def new_transaction(is_new_transaction: bool):
+    print("\nTransaction Menu")
+    if is_new_transaction:
+        print("Welcome to a new transaction")
     while True:
         chosen_items_plus_running_cost()
         display_list_of_products()
@@ -165,17 +252,22 @@ def new_transaction():
         elif option == "3":
             display_list_of_products()
         elif option == "4":
-            print("Continue")
+            if cart:
+                continue_and_finalise_purchase()
+                break
+            else:
+                print("\nYou do NOT have any Items in your CART")
         elif option == "5":
             break
+        # Allows users to reset /cancel the continuing transactions. It restarts the transaction
         elif option == "6":
             if cart:
                 cart.clear()
                 print("Your cart has been cleared")
-                new_transaction()
+                new_transaction(True)
                 break
             else:
-                print("You do NOT have any ITEMS in your CART")
+                print("\nYou do NOT have any ITEMS in your CART")
         else:
             print("Invalid choice")
 
@@ -208,11 +300,11 @@ def cancel_transaction_or_keep_previous_transaction():
         reset_or_keep = input("You have a previously saved transaction."
                               "Would you like to reset/cancel? (y/n)")
         if reset_or_keep == "n":
-            new_transaction()
+            new_transaction(True)
             break
         elif reset_or_keep == "y":
             cart.clear()
-            new_transaction()
+            new_transaction(True)
             break
         else:
             print("unknown input, please enter (y/n)")
@@ -228,11 +320,11 @@ def display_main_menu():
         if str(choice).lower() == "1":
             # Need to check if the cart has items. If so, ask the user if they want to restart. Else keep the cart
             if cart:
-                # if cart has items, go inside the function
+                # if cart has items, go inside the function and ask what they want to do with the transaction
                 cancel_transaction_or_keep_previous_transaction()
             else:
                 # Start Transaction
-                new_transaction()
+                new_transaction(True)
         elif str(choice).lower() == "2":
             # Display List
             display_list_of_products()
