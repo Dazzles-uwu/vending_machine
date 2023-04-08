@@ -13,6 +13,8 @@ dict_of_items = {
     "coke": {"stock": 32405, "price": 2.20}
 }
 
+# Add a class for Coins Inserted
+
 
 class Item:
     def __init__(self, item_name, item_stock, item_price):
@@ -143,8 +145,6 @@ def add_or_remove_items_from_cart(add_or_remove_option):
 
 # U-001 / New Transaction can be started
 def new_transaction():
-    # Temp cart dict until a class is implemented
-
     print("Welcome to a new transaction")
     while True:
         chosen_items_plus_running_cost()
@@ -155,6 +155,7 @@ def new_transaction():
         print("3. List of Products")
         print("4. Continue / Finalise Order")
         print("5. Go back to Main Menu")
+        print("6. Reset / Cancel current transaction")
         # NEED TO ADD Have an option to reset
         option = input("What would you like to do?: ")
 
@@ -167,6 +168,14 @@ def new_transaction():
             print("Continue")
         elif option == "5":
             break
+        elif option == "6":
+            if cart:
+                cart.clear()
+                print("Your cart has been cleared")
+                new_transaction()
+                break
+            else:
+                print("You do NOT have any ITEMS in your CART")
         else:
             print("Invalid choice")
 
@@ -193,6 +202,22 @@ def main_menu_list():
     print("6. Exit\n")
 
 
+def cancel_transaction_or_keep_previous_transaction():
+    # prompt the user to choose whether keep previous transaction or start a new one
+    while True:
+        reset_or_keep = input("You have a previously saved transaction."
+                              "Would you like to reset/cancel? (y/n)")
+        if reset_or_keep == "n":
+            new_transaction()
+            break
+        elif reset_or_keep == "y":
+            cart.clear()
+            new_transaction()
+            break
+        else:
+            print("unknown input, please enter (y/n)")
+
+
 def display_main_menu():
     menu_over = False
 
@@ -202,8 +227,12 @@ def display_main_menu():
 
         if str(choice).lower() == "1":
             # Need to check if the cart has items. If so, ask the user if they want to restart. Else keep the cart
-            # Start Transaction
-            new_transaction()
+            if cart:
+                # if cart has items, go inside the function
+                cancel_transaction_or_keep_previous_transaction()
+            else:
+                # Start Transaction
+                new_transaction()
         elif str(choice).lower() == "2":
             # Display List
             display_list_of_products()
