@@ -9,7 +9,7 @@ class Payment:
         self.inserted_coin += inserted_amount
 
     def current_coin_amount_in_dollars(self):
-        return "$%.2f" % (self.inserted_coin/100)
+        return "%.2f" % (self.inserted_coin/100)
 
     def current_coin_amount_in_cents(self):
         return self.inserted_coin
@@ -76,6 +76,14 @@ dict_of_items = {
 }
 
 user_payment = Payment()
+
+
+def overall_cart_price():
+    overall_price = 0
+    for keys, values in cart.items():
+        print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${values["price"]}')
+        overall_price += values["price"] * int(values["quantity"])
+    return int("%.2f" % overall_price)
 
 
 # Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
@@ -195,8 +203,34 @@ def insert_coins_into_machine():
             print("Please enter a valid input")
 
 
+def user_options_when_inserted_money_is_inefficient():
+    while True:
+        print("WARNING!\nYou have not entered required amount into the vending machine")
+        print("Please choose one of the following")
+        print("1. Refund Inserted Coins and Reset / Cancel current transaction")
+        print("2. Re-Enter Coins / Back to previous Screen")
+        options = input("What would you like to do?")
+
+        if options == "1":
+            print("Refund inserted coins")
+        elif options == "2":
+            continue_and_finalise_purchase()
+            break
+
+
+def validate_coins():
+    print("Checking INSERTED COINS NOW")
+    amount_user_paid = user_payment.current_coin_amount_in_cents()
+    # give any change back and dispense items
+    if amount_user_paid - overall_cart_price() >= 0:
+        print("Dispensing")
+        print("Congratulations you have purchased your items")
+    else:
+        user_options_when_inserted_money_is_inefficient()
+
+
 def current_user_payment():
-    print("\nCurrent Inserted Payment:", user_payment.current_coin_amount_in_dollars(), "\n")
+    print("\nCurrent Inserted Payment: " + "$" + user_payment.current_coin_amount_in_dollars(), "\n")
 
 
 # Finalise Purchase menu
@@ -208,8 +242,9 @@ def continue_and_finalise_purchase():
         print("\nFinalise Purchase Menu")
         print("1. Continue to buy / Change Order")
         print("2. Insert Coins")
-        print("3. Confirm")
-        print("4. Cancel / Reset Transaction")
+        print("3. Confirm and Continue (Dispense Item/s)")
+        print("4. Refund Inserted Coins")
+        print("5. Cancel / Reset Transaction")
         option = input("What would you like to do?: ")
 
         if option == "1":
@@ -218,8 +253,12 @@ def continue_and_finalise_purchase():
         elif option == "2":
             insert_coins_into_machine()
         elif option == "3":
-            print("You have confirmed")
+            validate_coins()
+            break
         elif option == "4":
+            # Need to check if user has paid anything.
+            print("REFUND INSERTED COINS")
+        elif option == "5":
             cart.clear()
             print("Your cart has been cleared")
             new_transaction(True)
