@@ -81,8 +81,7 @@ user_payment = Payment()
 def overall_cart_price():
     overall_price = 0
     for keys, values in cart.items():
-        print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${values["price"]}')
-        overall_price += values["price"] * int(values["quantity"])
+        overall_price += int(values["price"]) * int(values["quantity"])
     return int(overall_price)
 
 
