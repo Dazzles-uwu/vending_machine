@@ -83,7 +83,7 @@ def overall_cart_price():
     for keys, values in cart.items():
         print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${values["price"]}')
         overall_price += values["price"] * int(values["quantity"])
-    return int("%.2f" % overall_price)
+    return int(overall_price)
 
 
 # Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
@@ -96,7 +96,14 @@ def chosen_items_plus_running_cost():
         for keys, values in cart.items():
             print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${values["price"]}')
             overall_price += values["price"] * int(values["quantity"])
-        print("Total Price: $", overall_price)
+        print("Total Price: $", "%.2f" % overall_price)
+
+
+def dispensed_items():
+    print("\nDispensing the following item/s: ")
+    for keys, values in cart.items():
+        print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}')
+    print("Thank you and come again!")
 
 
 # Add or remove an item from the Cart
@@ -223,9 +230,12 @@ def validate_coins():
     amount_user_paid = user_payment.current_coin_amount_in_cents()
     # give any change back and dispense items
     if amount_user_paid - overall_cart_price() >= 0:
+        print("YOU HAVE HIT THIS CONDITION")
         print("Dispensing")
+        # dispensed_items()
         print("Congratulations you have purchased your items")
     else:
+        print("YOU HAVE HIT THIS LINE")
         user_options_when_inserted_money_is_inefficient()
 
 
