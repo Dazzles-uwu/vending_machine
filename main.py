@@ -47,6 +47,22 @@ class Item:
                 print(f'{keys.capitalize():8} Available Amount:{values["stock"]: 7}    '
                       f'Price: ${"%.2f" % values["price"]}')
         print("\n")
+    # cart = quantity
+    # items = stock
+
+    def update_item_stock(self, cart_items):
+        # Check cart and see what gets updated
+        for key in cart_items:
+            if key in self.items:
+                if self.items[key]["stock"] - cart_items[key]["quantity"] <= 0:
+                    del self.items[key]
+                else:
+                    self.items[key]["stock"] -= cart_items[key]["quantity"]
+
+        with open('items.txt', 'w') as file:
+            for key, value in self.items.items():
+                file.write(str(key) + "," + "stock" + "," + str(value["stock"]) + "," + "price" + ","
+                           + str(value["price"]) + "\n")
 
 
 class Cart:
@@ -160,19 +176,61 @@ class Cart:
 
 
 class Machine:
-    def __init__(self, status, coins):
-        self.status = status
-        self.coins = coins
+    def __init__(self):
+        with open('machine.txt', 'r') as f:
+            for index, line in enumerate(f):
+                if index == 0:
+                    self.status = line.strip()
+                elif index == 1:
+                    self.coins = int(line.strip())
 
     def __str__(self):
         return f"Machine Status: {self.status}\n" \
                f"Coin amount: {self.coins}"
 
-    def check_coin_amount_in_machine(self):
+    def check_coin_amount_in_machine_in_cents(self):
         return int(self.coins)
 
     def give_change_to_consumers(self, change_amount):
         self.coins -= change_amount
+        with open('machine.txt', 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+
+        # now change the 2nd line, note that you have to add a newline
+        data[1] = str(self.coins)
+
+        # and write everything back
+        with open('machine.txt', 'w') as file:
+            file.writelines(data)
+
+        with open('machine.txt', 'r') as file:
+            # read updated changes
+            data = file.readlines()
+            self.status = data[0].strip()
+            self.coins = int(data[1].strip())
+
+    def update_to_add_coin_stock(self, inserted_coins):
+        with open('machine.txt', 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+
+        print(inserted_coins)
+
+        # now change the 2nd line, note that you have to add a newline
+        data[1] = self.coins + inserted_coins
+        print(data[1])
+        data[1] = str(data[1])
+
+        # and write everything back
+        with open('machine.txt', 'w') as file:
+            file.writelines(data)
+
+        with open('machine.txt', 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+            self.status = data[0].strip()
+            self.coins = int(data[1].strip())
 
 
 class Transaction:
@@ -191,6 +249,9 @@ class Transaction:
 items = Item()
 user_payment = Payment()
 cart = Cart()
+machine = Machine()
+print(machine)
+# items.trial()
 
 
 def insert_coins_into_machine():
@@ -251,34 +312,52 @@ def user_options_when_inserted_money_is_inefficient():
             print("Invalid options")
 
 
-# def return_change_after_dispensing():
-#     # Check how much money is in the machine
-#     # need to figure out change money
-#     # if the machine cannot give the change back, simply ask the user to give exact or wait till machine resets
-#     # prompt the machine to go back to the continue_and_finalise_purchase()
-#     # reset amount user inputted money back to 0
-#     # print()
-#     # If there is NO
+def return_change_after_dispensing(expected_change):
+    # Check how much money is in the machine
+    machine_coin_stock_availability = machine.check_coin_amount_in_machine_in_cents() - expected_change
+    if machine_coin_stock_availability >= 0:
+        machine.update_to_add_coin_stock(user_payment.current_coin_amount_in_cents())
+        machine.give_change_to_consumers(expected_change)
+        print("We have given you a CHANGE of", "$%.2f" % (expected_change/100))
+        print("Dispensing....")
+        cart.dispensed_items()
+        # Maintain Drink Stock
+        items.update_item_stock(cart.get_cart())
+        # NEED TO DO MORE OF THIS Record Transaction
+        # Reset cart
+        cart.reset_cart()
+        user_payment.reset_payment()
+        print("Congratulations you have purchased your items")
+        print("Goodbye, your transaction has ended")
+    else:
+        print("We currently do not have any change for you!")
+        print("Please give exact change or kindly wait until the machine's money are stocked again")
+        print("We will refund you your inserted Coins, please try again soon!")
+        refund_user_money()
+        continue_and_finalise_purchase()
 
 
 def validate_coins():
     print("Checking INSERTED COINS NOW")
     amount_user_paid = user_payment.current_coin_amount_in_cents()
     # give any change back and dispense items
-    # print("user inserted", amount_user_paid)
-    # print("cart price", cart.overall_cart_price_in_cents())
-    # print("total change:", amount_user_paid - cart.overall_cart_price_in_cents())
-    if amount_user_paid - cart.overall_cart_price_in_cents() >= 0:
-        print("Dispensing")
-        cart.dispensed_items()
-        # if amount_user_paid - cart.overall_cart_price_in_cents() > 0:
-        #     return_change_after_dispensing()
-        # Maintain Coin stock
-        # Maintain Drink Stock
-        # Record Transaction
-        # Reset cart
-        print("Congratulations you have purchased your items")
-        print("Goodbye, your transaction has ended")
+    difference_in_money_inserted_and_cart_price = amount_user_paid - cart.overall_cart_price_in_cents()
+    if difference_in_money_inserted_and_cart_price >= 0:
+        if difference_in_money_inserted_and_cart_price > 0:
+            return_change_after_dispensing(difference_in_money_inserted_and_cart_price)
+        else:
+            print("Dispensing")
+            cart.dispensed_items()
+            # Maintain Coin stock
+            machine.update_to_add_coin_stock(amount_user_paid)
+            # Maintain Drink Stock
+            items.update_item_stock(cart.get_cart())
+            # NEED TO DO MORE OF THIS Record Transaction
+            # Reset cart
+            cart.reset_cart()
+            user_payment.reset_payment()
+            print("Congratulations you have purchased your items")
+            print("Goodbye, your transaction has ended")
     else:
         user_options_when_inserted_money_is_inefficient()
 
@@ -372,9 +451,6 @@ def new_transaction(is_new_transaction: bool):
                 print("\nYou do NOT have any ITEMS in your CART")
         else:
             print("Invalid choice")
-
-
-# HardCoded for now / U-002 / S-002
 
 
 def main_menu_list():
