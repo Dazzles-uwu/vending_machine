@@ -14,28 +14,146 @@ class Payment:
     def current_coin_amount_in_cents(self):
         return self.inserted_coin
 
+    def reset_payment(self):
+        self.inserted_coin = 0
+
 
 class Item:
-    def __init__(self, item_name, item_stock, item_price):
-        self.name = item_name
-        self.stock = item_stock
-        self.price = item_price
+    def __init__(self):
+        with open('items.txt', 'r') as f:
+            self.items = {}
+            for line in f:
+                x = line.split(",")
+                x[-1] = x[-1].strip()
+                item_name = x[0]
+                stock_key = x[1]
+                stock_value = x[2]
+                price_key = x[3]
+                price_value = x[4]
+                self.items[item_name] = {stock_key: int(stock_value), price_key: float(price_value)}
 
     def __str__(self):
-        return f"Item Type: {self.name}\n" \
-               f"Stock Amt.: {self.stock}\n" \
-               f"Item Price: {self.price}\n"
+        return f"Item Dictionary: {self.items}\n"
+
+    def get_items(self):
+        return self.items
+
+    def display_list_of_products(self):
+        print("\nList of Vending Machine Products")
+        for keys, values in self.items.items():
+            if int(values["stock"]) <= 0:
+                print(f'{keys.capitalize():8} ALERT PRODUCT OUT OF STOCK')
+            else:
+                print(f'{keys.capitalize():8} Available Amount:{values["stock"]: 7}    '
+                      f'Price: ${"%.2f" % values["price"]}')
+        print("\n")
 
 
 class Cart:
-    def __init__(self, cart_items: dict):
-        self.cart_items = cart_items
+    def __init__(self):
+        self.cart_items = {}
 
     def __str__(self):
         return f"Cart contains: {self.cart_items}"
 
-    def cart(self):
+    def get_cart(self):
         return dict(self.cart_items)
+
+    def overall_cart_price_in_cents(self):
+        overall_price = 0
+        for keys, values in self.cart_items.items():
+            overall_price += values["price"] * int(values["quantity"])
+        return int(overall_price * 100)
+
+    # Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
+    def chosen_items_plus_running_cost(self):
+        print("\nItems currently in cart:")
+        if not self.cart_items:
+            print("NO ITEMS CURRENTLY IN YOUR CART")
+        else:
+            overall_price = 0
+            for keys, values in self.cart_items.items():
+                print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${"%.2f" % values["price"]}')
+                overall_price += values["price"] * int(values["quantity"])
+            print("Total Price: $", "%.2f" % overall_price)
+
+    def dispensed_items(self):
+        print("\nDispensing the following item/s: ")
+        for keys, values in self.cart_items.items():
+            print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}')
+        print("Thank you and come again!")
+
+    # Add or remove an item from the Cart
+    def add_or_remove_items_from_cart(self, add_or_remove_option, items_available):
+        item_has_been_chosen = False
+        item_quantity_has_been_chosen = False
+
+        # Checks if there is nothing in Cart and User chose to remove an item
+        if not self.cart_items and add_or_remove_option == "2":
+            print("There is NOTHING in your CART to remove!")
+            return None
+
+        while not item_has_been_chosen:
+            if add_or_remove_option == "1":
+                print("What ITEM would you like to be ADDED into your Cart?")
+            elif add_or_remove_option == "2":
+                print("What ITEM would you like to be REMOVED into your Cart?")
+            else:
+                print("Not a Valid option")
+            item_chosen = input("Item: ").lower()
+
+            if add_or_remove_option == "1":
+                if item_chosen in items_available.keys():
+                    while not item_quantity_has_been_chosen:
+                        print("How many", item_chosen, "would you like to be ADDED to your cart?")
+                        quantity_to_be_added = input("Quantity to be ADDED")
+                        if quantity_to_be_added.isdigit():
+                            # checks if there are enough stocks to buy
+                            if items_available[item_chosen]["stock"] - int(quantity_to_be_added) >= 0:
+                                # if item has already been added to the cart, simply add the quantity user wants
+                                if item_chosen in self.cart_items.keys():
+                                    self.cart_items[item_chosen]["quantity"] += int(quantity_to_be_added)
+                                # if the item has NOT been added to the cart, create a key and its value
+                                else:
+                                    self.cart_items[item_chosen] = {
+                                        "quantity": int(quantity_to_be_added),
+                                        "price": items_available[item_chosen]["price"]
+                                        }
+                                item_has_been_chosen = True
+                                item_quantity_has_been_chosen = True
+                            # If there are no stocks available to buy, it will not allow purchase
+                            elif items_available[item_chosen]["stock"] <= 0:
+                                print("There are currently NO stock of", item_chosen, "left")
+                                item_has_been_chosen = True
+                                item_quantity_has_been_chosen = True
+                            else:
+                                print("Not enough stock to add")
+                        else:
+                            print("Must be a number")
+                else:
+                    print("Not a Valid item")
+            elif add_or_remove_option == "2":
+                if item_chosen in self.cart_items.keys():
+                    while not item_quantity_has_been_chosen:
+                        print("How many", item_chosen, "would you like to be REMOVED to your cart?")
+                        quantity_to_be_removed = input("Quantity to be REMOVED")
+                        if quantity_to_be_removed.isdigit():
+                            # Subtracts the amount of quantity in the cart
+                            if self.cart_items[item_chosen]["quantity"] - int(quantity_to_be_removed) > 0:
+                                self.cart_items[item_chosen]["quantity"] -= int(quantity_to_be_removed)
+                                item_has_been_chosen = True
+                                item_quantity_has_been_chosen = True
+                            # Removes the item from the Cart entirely
+                            elif self.cart_items[item_chosen]["quantity"] - int(quantity_to_be_removed) == 0:
+                                del self.cart_items[item_chosen]
+                                item_has_been_chosen = True
+                                item_quantity_has_been_chosen = True
+                            else:
+                                print("Quantity cannot go below 0")
+                        else:
+                            print("Must be a number")
+                else:
+                    print("Not a Valid item")
 
 
 class Machine:
@@ -49,6 +167,9 @@ class Machine:
 
     def check_coin_amount_in_machine(self):
         return int(self.coins)
+
+    def give_change_to_consumers(self, change_amount):
+        self.coins -= change_amount
 
 
 class Transaction:
@@ -64,118 +185,9 @@ class Transaction:
                f"Payment amount: {self.payment}\n"
 
 
-cart = {
-    "coffee": {"quantity": 23, "price": 2.20}
-}
-
-dict_of_items = {
-    "coffee": {"stock": 200, "price": 2.20},
-    "tea": {"stock": 0, "price": 2.20},
-    "juice": {"stock": 405, "price": 2.20},
-    "coke": {"stock": 32405, "price": 2.20}
-}
-
+items = Item()
 user_payment = Payment()
-
-
-def overall_cart_price():
-    overall_price = 0
-    for keys, values in cart.items():
-        overall_price += int(values["price"]) * int(values["quantity"])
-    return int(overall_price)
-
-
-# Running Cost of the product must be shown to the user i.e. total cost of the purchase. U-003
-def chosen_items_plus_running_cost():
-    print("\nItems currently in cart:")
-    if not cart:
-        print("NO ITEMS CURRENTLY IN YOUR CART")
-    else:
-        overall_price = 0
-        for keys, values in cart.items():
-            print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}    Price: ${values["price"]}')
-            overall_price += values["price"] * int(values["quantity"])
-        print("Total Price: $", "%.2f" % overall_price)
-
-
-def dispensed_items():
-    print("\nDispensing the following item/s: ")
-    for keys, values in cart.items():
-        print(f'{keys.capitalize():8} Quantity: {values["quantity"]: 7}')
-    print("Thank you and come again!")
-
-
-# Add or remove an item from the Cart
-def add_or_remove_items_from_cart(add_or_remove_option):
-    item_has_been_chosen = False
-    item_quantity_has_been_chosen = False
-
-    # Checks if there is nothing in Cart and User chose to remove an item
-    if not cart and add_or_remove_option == "2":
-        print("There is NOTHING in your CART to remove!")
-        return None
-
-    while not item_has_been_chosen:
-        if add_or_remove_option == "1":
-            print("What ITEM would you like to be ADDED into your Cart?")
-        elif add_or_remove_option == "2":
-            print("What ITEM would you like to be REMOVED into your Cart?")
-        else:
-            print("Not a Valid option")
-        item_chosen = input("Item: ").lower()
-
-        if add_or_remove_option == "1":
-            if item_chosen in dict_of_items.keys():
-                while not item_quantity_has_been_chosen:
-                    print("How many", item_chosen, "would you like to be ADDED to your cart?")
-                    quantity_to_be_added = input("Quantity to be ADDED")
-                    if quantity_to_be_added.isdigit():
-                        # checks if there are enough stocks to buy
-                        if dict_of_items[item_chosen]["stock"] - int(quantity_to_be_added) >= 0:
-                            # if item has already been added to the cart, simply add the quantity user wants
-                            if item_chosen in cart.keys():
-                                cart[item_chosen]["quantity"] += int(quantity_to_be_added)
-                            # if the item has NOT been added to the cart, create a key and its value
-                            else:
-                                cart[item_chosen] = {
-                                    "quantity": int(quantity_to_be_added),
-                                    "price": dict_of_items[item_chosen]["price"]
-                                    }
-                            item_has_been_chosen = True
-                            item_quantity_has_been_chosen = True
-                        # If there are no stocks available to buy, it will not allow purchase
-                        elif dict_of_items[item_chosen]["stock"] <= 0:
-                            print("There are currently NO stock of", item_chosen, "left")
-                            item_has_been_chosen = True
-                            item_quantity_has_been_chosen = True
-                        else:
-                            print("Not enough stock to add")
-                    else:
-                        print("Must be a number")
-            else:
-                print("Not a Valid item")
-        elif add_or_remove_option == "2":
-            if item_chosen in cart.keys():
-                while not item_quantity_has_been_chosen:
-                    print("How many", item_chosen, "would you like to be REMOVED to your cart?")
-                    quantity_to_be_removed = input("Quantity to be REMOVED")
-                    if quantity_to_be_removed.isdigit():
-                        # Subtracts the amount of quantity in the cart
-                        if cart[item_chosen]["quantity"] - int(quantity_to_be_removed) > 0:
-                            cart[item_chosen]["quantity"] -= int(quantity_to_be_removed)
-                            item_has_been_chosen = True
-                            item_quantity_has_been_chosen = True
-                        # Removes the item from the Cart entirely
-                        elif cart[item_chosen]["quantity"] - int(quantity_to_be_removed) == 0:
-                            del cart[item_chosen]
-                            item_has_been_chosen = True
-                            item_quantity_has_been_chosen = True
-                        else:
-                            print("Quantity cannot go below 0")
-                    else:
-                        print("Must be a number")
-            else:
-                print("Not a Valid item")
+cart = Cart()
 
 
 def insert_coins_into_machine():
@@ -209,32 +221,61 @@ def insert_coins_into_machine():
             print("Please enter a valid input")
 
 
+def refund_user_money():
+    money_to_refund = user_payment.current_coin_amount_in_dollars()
+    print("\n$" + money_to_refund, "has been refunded back to you.")
+    print("Please come again soon\n")
+    user_payment.reset_payment()
+
+
 def user_options_when_inserted_money_is_inefficient():
     while True:
         print("WARNING!\nYou have not entered required amount into the vending machine")
         print("Please choose one of the following")
-        print("1. Refund Inserted Coins and Reset / Cancel current transaction")
+        print("1. Reset / Cancel current transaction (will refund inserted coins)")
         print("2. Re-Enter Coins / Back to previous Screen")
         options = input("What would you like to do?")
 
         if options == "1":
-            print("Refund inserted coins")
+            if user_payment.current_coin_amount_in_cents() > 0:
+                refund_user_money()
+            new_transaction(True)
+            break
         elif options == "2":
             continue_and_finalise_purchase()
             break
+        else:
+            print("Invalid options")
+
+
+# def return_change_after_dispensing():
+    # # Check how much money is in the machine
+    # # need to figure out change money
+    # if the machine cannot give the change back, simply ask the user to give exact or wait till machine resets
+    # prompt the machine to go back to the continue_and_finalise_purchase()
+    # # reset amount user inputted money back to 0
+    # print()
+    # If there is NO
 
 
 def validate_coins():
     print("Checking INSERTED COINS NOW")
     amount_user_paid = user_payment.current_coin_amount_in_cents()
     # give any change back and dispense items
-    if amount_user_paid - overall_cart_price() >= 0:
-        print("YOU HAVE HIT THIS CONDITION")
+    print("user inserted", amount_user_paid)
+    print("cart price", cart.overall_cart_price_in_cents())
+    print("total change:", amount_user_paid - cart.overall_cart_price_in_cents())
+    if amount_user_paid - cart.overall_cart_price_in_cents() >= 0:
         print("Dispensing")
-        # dispensed_items()
+        cart.dispensed_items()
+        # if amount_user_paid - cart.overall_cart_price_in_cents() > 0:
+        #     return_change_after_dispensing()
+        # Maintain Coin stock
+        # Maintain Drink Stock
+        # Record Transaction
         print("Congratulations you have purchased your items")
+        print("Goodbye, your transaction has ended")
     else:
-        print("YOU HAVE HIT THIS LINE")
         user_options_when_inserted_money_is_inefficient()
 
 
@@ -245,7 +286,7 @@ def current_user_payment():
 # Finalise Purchase menu
 def continue_and_finalise_purchase():
     while True:
-        chosen_items_plus_running_cost()
+        cart.chosen_items_plus_running_cost()
         current_user_payment()
 
         print("\nFinalise Purchase Menu")
@@ -266,9 +307,14 @@ def continue_and_finalise_purchase():
             break
         elif option == "4":
             # Need to check if user has paid anything.
-            print("REFUND INSERTED COINS")
+            if user_payment.current_coin_amount_in_cents() > 0:
+                refund_user_money()
+            else:
+                print("You have no money to be refunded")
         elif option == "5":
-            cart.clear()
+            if user_payment.current_coin_amount_in_cents() > 0:
+                refund_user_money()
+            cart.get_cart().clear()
             print("Your cart has been cleared")
             new_transaction(True)
             break
@@ -282,8 +328,8 @@ def new_transaction(is_new_transaction: bool):
     if is_new_transaction:
         print("Welcome to a new transaction")
     while True:
-        chosen_items_plus_running_cost()
-        display_list_of_products()
+        cart.chosen_items_plus_running_cost()
+        items.display_list_of_products()
         print("Available Options")
         print("1. Add item to Cart")
         print("2. Remove item from Cart")
@@ -295,23 +341,27 @@ def new_transaction(is_new_transaction: bool):
         option = input("What would you like to do?: ")
 
         if option == "1" or option == "2":
-            chosen_items_plus_running_cost()
-            add_or_remove_items_from_cart(option)
+            cart.chosen_items_plus_running_cost()
+            cart.add_or_remove_items_from_cart(option, items.get_items())
         elif option == "3":
-            display_list_of_products()
+            items.display_list_of_products()
         elif option == "4":
-            if cart:
+            if cart.get_cart():
                 continue_and_finalise_purchase()
                 break
             else:
                 print("\nYou do NOT have any Items in your CART")
         elif option == "5":
+            if user_payment.current_coin_amount_in_cents() > 0:
+                refund_user_money()
             break
         # Allows users to reset /cancel the continuing transactions. It restarts the transaction
         elif option == "6":
-            if cart:
-                cart.clear()
+            if cart.get_cart():
+                cart.get_cart().clear()
                 print("Your cart has been cleared")
+                if user_payment.current_coin_amount_in_cents() > 0:
+                    refund_user_money()
                 new_transaction(True)
                 break
             else:
@@ -321,14 +371,6 @@ def new_transaction(is_new_transaction: bool):
 
 
 # HardCoded for now / U-002 / S-002
-def display_list_of_products():
-    print("\nList of Vending Machine Products")
-    for keys, values in dict_of_items.items():
-        if int(values["stock"]) <= 0:
-            print(f'{keys.capitalize():8} ALERT PRODUCT OUT OF STOCK')
-        else:
-            print(f'{keys.capitalize():8} Available Amount:{values["stock"]: 7}    Price: ${values["price"]}')
-    print("\n")
 
 
 def main_menu_list():
@@ -351,7 +393,7 @@ def cancel_transaction_or_keep_previous_transaction():
             new_transaction(True)
             break
         elif reset_or_keep == "y":
-            cart.clear()
+            cart.get_cart().clear()
             new_transaction(True)
             break
         else:
@@ -367,7 +409,7 @@ def display_main_menu():
 
         if str(choice).lower() == "1":
             # Need to check if the cart has items. If so, ask the user if they want to restart. Else keep the cart
-            if cart:
+            if cart.get_cart():
                 # if cart has items, go inside the function and ask what they want to do with the transaction
                 cancel_transaction_or_keep_previous_transaction()
             else:
@@ -375,7 +417,7 @@ def display_main_menu():
                 new_transaction(True)
         elif str(choice).lower() == "2":
             # Display List
-            display_list_of_products()
+            items.display_list_of_products()
         elif str(choice).lower() == "3" or str(choice).lower() == "4" or str(choice).lower() == "5":
             password_input = input("Admin Password (123): ")
             # Continue depending on the variable "Choice"
