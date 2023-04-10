@@ -59,6 +59,9 @@ class Cart:
     def get_cart(self):
         return dict(self.cart_items)
 
+    def reset_cart(self):
+        self.cart_items.clear()
+
     def overall_cart_price_in_cents(self):
         overall_price = 0
         for keys, values in self.cart_items.items():
@@ -249,22 +252,22 @@ def user_options_when_inserted_money_is_inefficient():
 
 
 # def return_change_after_dispensing():
-    # # Check how much money is in the machine
-    # # need to figure out change money
-    # if the machine cannot give the change back, simply ask the user to give exact or wait till machine resets
-    # prompt the machine to go back to the continue_and_finalise_purchase()
-    # # reset amount user inputted money back to 0
-    # print()
-    # If there is NO
+#     # Check how much money is in the machine
+#     # need to figure out change money
+#     # if the machine cannot give the change back, simply ask the user to give exact or wait till machine resets
+#     # prompt the machine to go back to the continue_and_finalise_purchase()
+#     # reset amount user inputted money back to 0
+#     # print()
+#     # If there is NO
 
 
 def validate_coins():
     print("Checking INSERTED COINS NOW")
     amount_user_paid = user_payment.current_coin_amount_in_cents()
     # give any change back and dispense items
-    print("user inserted", amount_user_paid)
-    print("cart price", cart.overall_cart_price_in_cents())
-    print("total change:", amount_user_paid - cart.overall_cart_price_in_cents())
+    # print("user inserted", amount_user_paid)
+    # print("cart price", cart.overall_cart_price_in_cents())
+    # print("total change:", amount_user_paid - cart.overall_cart_price_in_cents())
     if amount_user_paid - cart.overall_cart_price_in_cents() >= 0:
         print("Dispensing")
         cart.dispensed_items()
@@ -273,6 +276,7 @@ def validate_coins():
         # Maintain Coin stock
         # Maintain Drink Stock
         # Record Transaction
+        # Reset cart
         print("Congratulations you have purchased your items")
         print("Goodbye, your transaction has ended")
     else:
@@ -314,7 +318,7 @@ def continue_and_finalise_purchase():
         elif option == "5":
             if user_payment.current_coin_amount_in_cents() > 0:
                 refund_user_money()
-            cart.get_cart().clear()
+            cart.reset_cart()
             print("Your cart has been cleared")
             new_transaction(True)
             break
@@ -358,7 +362,7 @@ def new_transaction(is_new_transaction: bool):
         # Allows users to reset /cancel the continuing transactions. It restarts the transaction
         elif option == "6":
             if cart.get_cart():
-                cart.get_cart().clear()
+                cart.reset_cart()
                 print("Your cart has been cleared")
                 if user_payment.current_coin_amount_in_cents() > 0:
                     refund_user_money()
@@ -393,7 +397,8 @@ def cancel_transaction_or_keep_previous_transaction():
             new_transaction(True)
             break
         elif reset_or_keep == "y":
-            cart.get_cart().clear()
+            cart.reset_cart()
+            print(cart)
             new_transaction(True)
             break
         else:
