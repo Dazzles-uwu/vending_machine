@@ -2,3 +2,8 @@ items,coffee,tea,payment,2300,date,Tuesday 11/April/2023 12:03
 items,juice,tup,tea,payment,2300,date,Tuesday 11/April/2023 12:09
 items,7up,payment,700,date,Tuesday 11/April/2023 23:18
 items,coffee,juice,coke,7up,payment,1230,date,Tuesday 11/April/2023 23:23
+items,coffee,7up,payment,1490,date,Wednesday 12/April/2023 01:26
+items,tea,payment,440,date,Wednesday 12/April/2023 01:30
+items,coffee,juice,payment,440,date,Wednesday 12/April/2023 01:33
+items,coffee,payment,220,date,Wednesday 12/April/2023 01:36
+items,coffee,payment,220,date,Wednesday 12/April/2023 01:39

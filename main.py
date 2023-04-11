@@ -1,4 +1,6 @@
 import datetime
+import time
+from tqdm import tqdm
 
 
 class Payment:
@@ -263,11 +265,8 @@ class Machine:
             # read a list of lines into data
             data = file.readlines()
 
-        print(inserted_coins)
-
         # now change the 2nd line, note that you have to add a newline
         data[1] = self.coins + inserted_coins
-        print(data[1])
         data[1] = str(data[1])
 
         # and write everything back
@@ -357,7 +356,7 @@ user_payment = Payment()
 cart = Cart()
 machine = Machine()
 transaction = Transaction()
-print(machine)
+
 
 def insert_coins_into_machine():
     global user_payment
@@ -443,12 +442,30 @@ def return_change_after_dispensing(expected_change):
         continue_and_finalise_purchase()
 
 
+def check_if_hot_items_in_cart():
+    hot_item = False
+    for item_name in cart.get_cart().keys():
+        if item_name == "coffee" or item_name == "tea":
+            hot_item = True
+
+    if hot_item:
+        print("Boiling....")
+        for i in tqdm(range(10)):
+            time.sleep(1)
+        time.sleep(1)
+        print("Mixing Ingredients....")
+        for i in tqdm(range(10)):
+            time.sleep(1)
+        print("Done, enjoy your Hot Item")
+
+
 def validate_coins():
     print("Checking INSERTED COINS NOW")
     amount_user_paid = user_payment.current_coin_amount_in_cents()
     # give any change back and dispense items
     difference_in_money_inserted_and_cart_price = amount_user_paid - cart.overall_cart_price_in_cents()
     if difference_in_money_inserted_and_cart_price >= 0:
+        check_if_hot_items_in_cart()
         if difference_in_money_inserted_and_cart_price > 0:
             return_change_after_dispensing(difference_in_money_inserted_and_cart_price)
         else:
