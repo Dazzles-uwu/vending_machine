@@ -1,3 +1,6 @@
+import datetime
+
+
 class Payment:
     def __init__(self):
         self.inserted_coin = 0
@@ -9,7 +12,7 @@ class Payment:
         self.inserted_coin += inserted_amount
 
     def current_coin_amount_in_dollars(self):
-        return "%.2f" % (self.inserted_coin/100)
+        return "%.2f" % (self.inserted_coin / 100)
 
     def current_coin_amount_in_cents(self):
         return self.inserted_coin
@@ -47,6 +50,7 @@ class Item:
                 print(f'{keys.capitalize():8} Available Amount:{values["stock"]: 7}    '
                       f'Price: ${"%.2f" % values["price"]}')
         print("\n")
+
     # cart = quantity
     # items = stock
 
@@ -74,6 +78,9 @@ class Cart:
 
     def get_cart(self):
         return dict(self.cart_items)
+
+    def list_of_keys(self):
+        return list(self.cart_items.keys())
 
     def reset_cart(self):
         self.cart_items.clear()
@@ -137,7 +144,7 @@ class Cart:
                                     self.cart_items[item_chosen] = {
                                         "quantity": int(quantity_to_be_added),
                                         "price": items_available[item_chosen]["price"]
-                                        }
+                                    }
                                 item_has_been_chosen = True
                                 item_quantity_has_been_chosen = True
                             # If there are no stocks available to buy, it will not allow purchase
@@ -191,6 +198,47 @@ class Machine:
     def check_coin_amount_in_machine_in_cents(self):
         return int(self.coins)
 
+    def get_machine_status(self):
+        return self.status
+
+    def set_maintenance_status(self):
+        with open('machine.txt', 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+
+        # now change the 2nd line, note that you have to add a newline
+        data[0] = "maintenance\n"
+        data[1] = str(self.coins)
+
+        # and write everything back
+        with open('machine.txt', 'w') as file:
+            file.writelines(data)
+
+        with open('machine.txt', 'r') as file:
+            # read updated changes
+            data = file.readlines()
+            self.status = data[0].strip()
+            self.coins = int(data[1].strip())
+
+    def set_working_status(self):
+        with open('machine.txt', 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+
+        # now change the 2nd line, note that you have to add a newline
+        data[0] = "working\n"
+        data[1] = str(self.coins)
+
+        # and write everything back
+        with open('machine.txt', 'w') as file:
+            file.writelines(data)
+
+        with open('machine.txt', 'r') as file:
+            # read updated changes
+            data = file.readlines()
+            self.status = data[0].strip()
+            self.coins = int(data[1].strip())
+
     def give_change_to_consumers(self, change_amount):
         self.coins -= change_amount
         with open('machine.txt', 'r') as file:
@@ -234,25 +282,82 @@ class Machine:
 
 
 class Transaction:
-    def __init__(self, items_purchased, date, payment):
-        self.items_purchased = items_purchased
-        self.date = date
-        self.payment = payment
+    def __init__(self):
+        with open('transaction.txt', 'r') as f:
+            self.transaction_dict = {}
+            key_id = 0
+            for line in f:
+                amount_of_items = 0
+                temp_list_var = line.split(",")
+                temp_list_var[-1] = temp_list_var[-1].strip()
+
+                self.transaction_dict[key_id] = {}
+                current_key_value = ""
+
+                for index_transaction in temp_list_var:
+                    if index_transaction == "items" or index_transaction == "payment" or index_transaction == "date":
+                        current_key_value = index_transaction
+                    elif current_key_value == "items":
+                        if amount_of_items == 0:
+                            self.transaction_dict[key_id]["items"] = [index_transaction]
+                            amount_of_items += 1
+                        else:
+                            self.transaction_dict[key_id]["items"].append(index_transaction)
+                    elif current_key_value == "payment":
+                        self.transaction_dict[key_id]["payment"] = int(index_transaction)
+                    elif current_key_value == "date":
+                        x = datetime.datetime.now()
+                        self.transaction_dict[key_id]["date"] = index_transaction
+                key_id += 1
 
     def __str__(self):
-        return f"Transaction\n" \
-               f"Items Purchased: {self.items_purchased}\n" \
-               f"Date Purchased: {self.date}\n" \
-               f"Payment amount: {self.payment}\n"
+        return f"Transaction: {self.transaction_dict}"
+
+    def get_transaction(self):
+        return self.transaction_dict
+
+    def record_transaction(self, cart_item_keys, cart_price):
+        with open('transaction.txt', 'a') as file:
+            string_of_items_in_cart = (','.join(cart_item_keys)).strip()
+            x = datetime.datetime.now()
+
+            file.write("\nitems" + "," + string_of_items_in_cart + "," + "payment" + ","
+                       + str(cart_price) + "," + "date" + ","
+                       + x.strftime("%A %d/%B/%Y %H:%M"))
+
+        with open('transaction.txt', 'r') as f:
+            self.transaction_dict = {}
+            key_id = 0
+            for line in f:
+                amount_of_items = 0
+                temp_list_var = line.split(",")
+                temp_list_var[-1] = temp_list_var[-1].strip()
+
+                self.transaction_dict[key_id] = {}
+                current_key_value = ""
+
+                for index_transaction in temp_list_var:
+                    if index_transaction == "items" or index_transaction == "payment" or index_transaction == "date":
+                        current_key_value = index_transaction
+                    elif current_key_value == "items":
+                        if amount_of_items == 0:
+                            self.transaction_dict[key_id]["items"] = [index_transaction]
+                            amount_of_items += 1
+                        else:
+                            self.transaction_dict[key_id]["items"].append(index_transaction)
+                    elif current_key_value == "payment":
+                        self.transaction_dict[key_id]["payment"] = int(index_transaction)
+                    elif current_key_value == "date":
+                        self.transaction_dict[key_id]["date"] = index_transaction
+                key_id += 1
 
 
 items = Item()
 user_payment = Payment()
 cart = Cart()
 machine = Machine()
+transaction = Transaction()
 print(machine)
-# items.trial()
-
 
 def insert_coins_into_machine():
     global user_payment
@@ -318,12 +423,13 @@ def return_change_after_dispensing(expected_change):
     if machine_coin_stock_availability >= 0:
         machine.update_to_add_coin_stock(user_payment.current_coin_amount_in_cents())
         machine.give_change_to_consumers(expected_change)
-        print("We have given you a CHANGE of", "$%.2f" % (expected_change/100))
+        print("We have given you a CHANGE of", "$%.2f" % (expected_change / 100))
         print("Dispensing....")
         cart.dispensed_items()
         # Maintain Drink Stock
         items.update_item_stock(cart.get_cart())
-        # NEED TO DO MORE OF THIS Record Transaction
+        # Record Transaction
+        transaction.record_transaction(cart.list_of_keys(), cart.overall_cart_price_in_cents())
         # Reset cart
         cart.reset_cart()
         user_payment.reset_payment()
@@ -352,7 +458,8 @@ def validate_coins():
             machine.update_to_add_coin_stock(amount_user_paid)
             # Maintain Drink Stock
             items.update_item_stock(cart.get_cart())
-            # NEED TO DO MORE OF THIS Record Transaction
+            # Record Transaction
+            transaction.record_transaction(cart.list_of_keys(), cart.overall_cart_price_in_cents())
             # Reset cart
             cart.reset_cart()
             user_payment.reset_payment()
@@ -458,9 +565,9 @@ def main_menu_list():
     print("Please choose one of the following options")
     print("1. New Transaction")
     print("2. List of Products")
-    print("3. Machine Status")
-    print("4. Statistical Report")
-    print("5. Reset System")
+    print("3. Change Machine Status (ADMIN)")
+    print("4. Statistical Report (ADMIN)")
+    print("5. Reset System (ADMIN)")
     print("6. Exit\n")
 
 
@@ -481,28 +588,74 @@ def cancel_transaction_or_keep_previous_transaction():
             print("unknown input, please enter (y/n)")
 
 
+def change_machine_status():
+    while True:
+        print("\nChanging Machine Status Menu\n")
+        print("Are you sure you would like to change the current machine status of", machine.get_machine_status(),"?")
+        option = input("please answer with (y/n)")
+        if option.lower() == "y":
+            if machine.get_machine_status() == "working":
+                machine.set_maintenance_status()
+            elif machine.get_machine_status() == "maintenance":
+                machine.set_working_status()
+            print("Your Machine status has now been changed...")
+            break
+        elif option.lower() == "n":
+            print("returning you to Main Menu")
+            break
+        else:
+            print("""Invalid choice, please answer with the character "y" or "n" only""")
+
+
+def provide_statistical_report():
+    transaction_history = transaction.get_transaction()
+
+    print("\nPurchase History")
+    for transaction_id in transaction_history:
+        print("\nTransaction ID:", transaction_id)
+        for key_name in transaction_history[transaction_id]:
+            if key_name == "items":
+                result_string = ",".join(transaction_history[transaction_id][key_name])
+                print("Items Purchased:", result_string)
+            elif key_name == "payment":
+                print("Transaction Amount: $" + str((int(transaction_history[transaction_id][key_name])/100)))
+            elif key_name == "date":
+                print("Date Purchased:", transaction_history[transaction_id][key_name])
+
+
 def display_main_menu():
     menu_over = False
 
     while not menu_over:
+        print("\nMachine Status:", machine.get_machine_status().capitalize())
         main_menu_list()
         choice = input("Select an Option: ")
 
         if str(choice).lower() == "1":
-            # Need to check if the cart has items. If so, ask the user if they want to restart. Else keep the cart
-            if cart.get_cart():
-                # if cart has items, go inside the function and ask what they want to do with the transaction
-                cancel_transaction_or_keep_previous_transaction()
+            if machine.get_machine_status() == "working":
+                # Need to check if the cart has items. If so, ask the user if they want to restart. Else keep the cart
+                if cart.get_cart():
+                    # if cart has items, go inside the function and ask what they want to do with the transaction
+                    cancel_transaction_or_keep_previous_transaction()
+                else:
+                    # Start Transaction
+                    new_transaction(True)
             else:
-                # Start Transaction
-                new_transaction(True)
+                print("The System is currently Under maintenance.")
+                print("Please contact your ADMIN for further information.")
         elif str(choice).lower() == "2":
             # Display List
             items.display_list_of_products()
         elif str(choice).lower() == "3" or str(choice).lower() == "4" or str(choice).lower() == "5":
             password_input = input("Admin Password (123): ")
             # Continue depending on the variable "Choice"
-            # if password_input == "123":
+            if password_input == "123":
+                if str(choice).lower() == "4":
+                    provide_statistical_report()
+                elif str(choice).lower() == "3":
+                    change_machine_status()
+            else:
+                print("Wrong Password")
         elif str(choice).lower() == "6":
             print("Shutting Down now")
             menu_over = True
@@ -520,6 +673,5 @@ def startup():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     startup()
-
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
