@@ -53,9 +53,6 @@ class Item:
                       f'Price: ${"%.2f" % values["price"]}')
         print("\n")
 
-    # cart = quantity
-    # items = stock
-
     def update_item_stock(self, cart_items):
         # Check cart and see what gets updated
         for key in cart_items:
@@ -69,6 +66,24 @@ class Item:
             for key, value in self.items.items():
                 file.write(str(key) + "," + "stock" + "," + str(value["stock"]) + "," + "price" + ","
                            + str(value["price"]) + "\n")
+
+    def reset_items_to_default(self):
+        with open('items.txt', 'w') as file:
+            for key, value in self.items.items():
+                file.write(str(key) + "," + "stock" + "," + str(300) + "," + "price" + ","
+                           + str(value["price"]) + "\n")
+
+        with open('items.txt', 'r') as f:
+            self.items = {}
+            for line in f:
+                x = line.split(",")
+                x[-1] = x[-1].strip()
+                item_name = x[0]
+                stock_key = x[1]
+                stock_value = x[2]
+                price_key = x[3]
+                price_value = x[4]
+                self.items[item_name] = {stock_key: int(stock_value), price_key: float(price_value)}
 
 
 class Cart:
@@ -279,6 +294,16 @@ class Machine:
             self.status = data[0].strip()
             self.coins = int(data[1].strip())
 
+    def reset_items_to_default(self):
+        with open('machine.txt', 'w') as file:
+            file.writelines(self.status + "\n" + "50000")
+
+        with open('machine.txt', 'r') as file:
+            # read updated changes
+            data = file.readlines()
+            self.status = data[0].strip()
+            self.coins = int(data[1].strip())
+
 
 class Transaction:
     def __init__(self):
@@ -305,8 +330,7 @@ class Transaction:
                     elif current_key_value == "payment":
                         self.transaction_dict[key_id]["payment"] = int(index_transaction)
                     elif current_key_value == "date":
-                        x = datetime.datetime.now()
-                        self.transaction_dict[key_id]["date"] = index_transaction
+                        self.transaction_dict[key_id]["date"] = index_transaction.strip()
                 key_id += 1
 
     def __str__(self):
@@ -322,7 +346,7 @@ class Transaction:
 
             file.write("\nitems" + "," + string_of_items_in_cart + "," + "payment" + ","
                        + str(cart_price) + "," + "date" + ","
-                       + x.strftime("%A %d/%B/%Y %H:%M"))
+                       + x.strftime("%A %d/%B/%Y %H:%M").strip())
 
         with open('transaction.txt', 'r') as f:
             self.transaction_dict = {}
@@ -347,7 +371,7 @@ class Transaction:
                     elif current_key_value == "payment":
                         self.transaction_dict[key_id]["payment"] = int(index_transaction)
                     elif current_key_value == "date":
-                        self.transaction_dict[key_id]["date"] = index_transaction
+                        self.transaction_dict[key_id]["date"] = index_transaction.strip()
                 key_id += 1
 
 
@@ -360,11 +384,29 @@ class Ingredient:
                 temp_list_var[-1] = temp_list_var[-1].strip()
                 self.ingredient_dict[temp_list_var[0]] = int(temp_list_var[1])
 
-        print(self.ingredient_dict)
-        print(type(self.ingredient_dict))
-
     def get_ingredients(self):
         return dict(self.ingredient_dict)
+
+    def take_away_ingredient(self):
+        for key, value in self.ingredient_dict.items():
+            if value > 0:
+                self.ingredient_dict[key] = int(value) - 1
+
+        with open('ingredients.txt', 'w') as file:
+            for key, value in self.ingredient_dict.items():
+                file.write(str(key) + "," + str(value) + "\n")
+
+    def reset_items_to_default(self):
+        with open('ingredients.txt', 'w') as file:
+            for key, value in self.ingredient_dict.items():
+                file.write(str(key) + "," + str("300") + "\n")
+
+        with open('ingredients.txt', 'r') as f:
+            self.ingredient_dict = {}
+            for line in f:
+                temp_list_var = line.split(",")
+                temp_list_var[-1] = temp_list_var[-1].strip()
+                self.ingredient_dict[temp_list_var[0]] = int(temp_list_var[1])
 
 
 items = Item()
@@ -471,11 +513,14 @@ def check_if_hot_items_in_cart():
         print("Boiling....")
         for i in tqdm(range(10)):
             time.sleep(1)
-        time.sleep(1)
+
         print("Mixing Ingredients....")
         for i in tqdm(range(10)):
             time.sleep(1)
-        print("Done, enjoy your Hot Item")
+
+        print("Your Hot item has been created, enjoy")
+        # take away ingredient
+        ingredient.take_away_ingredient()
 
 
 def prompt_for_ingredients():
@@ -697,6 +742,26 @@ def provide_statistical_report():
                 print("Date Purchased:", transaction_history[transaction_id][key_name])
 
 
+def reset_operation_for_vending_machine():
+    while True:
+        print("\nWe are about to reset your machine.")
+        output = input("Are you sure you would like to reset? (y/n): ")
+        if output == "y":
+            items.reset_items_to_default()
+            machine.reset_items_to_default()
+            ingredient.reset_items_to_default()
+            cart.reset_cart()
+            print("Resetting...")
+            for i in tqdm(range(10)):
+                time.sleep(1)
+            break
+        elif output == "n":
+            print("Returning you back to Main Menu...")
+            break
+        else:
+            print("Invalid input")
+
+
 def display_main_menu():
     menu_over = False
 
@@ -728,6 +793,8 @@ def display_main_menu():
                     provide_statistical_report()
                 elif str(choice).lower() == "3":
                     change_machine_status()
+                elif str(choice).lower() == "5":
+                    reset_operation_for_vending_machine()
             else:
                 print("Wrong Password")
         elif str(choice).lower() == "6":
