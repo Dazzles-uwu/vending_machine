@@ -1,4 +1,4 @@
-coffee,stock,167,price,2.2
+coffee,stock,166,price,2.2
 tea,stock,1,price,2.2
 juice,stock,402,price,2.2
 coke,stock,32403,price,2.2

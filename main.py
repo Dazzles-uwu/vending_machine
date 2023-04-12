@@ -351,11 +351,28 @@ class Transaction:
                 key_id += 1
 
 
+class Ingredient:
+    def __init__(self):
+        with open('ingredients.txt', 'r') as f:
+            self.ingredient_dict = {}
+            for line in f:
+                temp_list_var = line.split(",")
+                temp_list_var[-1] = temp_list_var[-1].strip()
+                self.ingredient_dict[temp_list_var[0]] = int(temp_list_var[1])
+
+        print(self.ingredient_dict)
+        print(type(self.ingredient_dict))
+
+    def get_ingredients(self):
+        return dict(self.ingredient_dict)
+
+
 items = Item()
 user_payment = Payment()
 cart = Cart()
 machine = Machine()
 transaction = Transaction()
+ingredient = Ingredient()
 
 
 def insert_coins_into_machine():
@@ -423,7 +440,9 @@ def return_change_after_dispensing(expected_change):
         machine.update_to_add_coin_stock(user_payment.current_coin_amount_in_cents())
         machine.give_change_to_consumers(expected_change)
         print("We have given you a CHANGE of", "$%.2f" % (expected_change / 100))
-        print("Dispensing....")
+        print("Dispensing...")
+        for i in tqdm(range(10)):
+            time.sleep(1)
         cart.dispensed_items()
         # Maintain Drink Stock
         items.update_item_stock(cart.get_cart())
@@ -459,17 +478,55 @@ def check_if_hot_items_in_cart():
         print("Done, enjoy your Hot Item")
 
 
+def prompt_for_ingredients():
+    no_ingredient = False
+    for keys, values in ingredient.get_ingredients().items():
+        if int(values) == 0:
+            no_ingredient = True
+            print("There are currently NO", keys, "available")
+    while True:
+        if no_ingredient:
+            print("\nYou are still able to proceed to buy the item/s")
+            print("however the missing ingredient/s will not be added")
+            print("\nYour options are:")
+            print("1. Continue to purchase without missing ingredient/s")
+            print("2. Cancel Transaction")
+            option = input("\nWhat would you like to do:")
+
+            if option == "1":
+                print("Continuing purchase...")
+                no_ingredient = False
+                break
+            elif option == "2":
+                if user_payment.current_coin_amount_in_cents() > 0:
+                    refund_user_money()
+                cart.reset_cart()
+                print("Your cart has been cleared")
+                new_transaction(True)
+                no_ingredient = True
+                break
+            else:
+                print("Invalid choice/input")
+        else:
+            break
+    return no_ingredient
+
+
 def validate_coins():
     print("Checking INSERTED COINS NOW")
     amount_user_paid = user_payment.current_coin_amount_in_cents()
     # give any change back and dispense items
     difference_in_money_inserted_and_cart_price = amount_user_paid - cart.overall_cart_price_in_cents()
     if difference_in_money_inserted_and_cart_price >= 0:
+        if prompt_for_ingredients():
+            return
         check_if_hot_items_in_cart()
         if difference_in_money_inserted_and_cart_price > 0:
             return_change_after_dispensing(difference_in_money_inserted_and_cart_price)
         else:
-            print("Dispensing")
+            print("Dispensing...")
+            for i in tqdm(range(10)):
+                time.sleep(1)
             cart.dispensed_items()
             # Maintain Coin stock
             machine.update_to_add_coin_stock(amount_user_paid)
