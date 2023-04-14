@@ -563,12 +563,15 @@ def validate_coins():
     # give any change back and dispense items
     difference_in_money_inserted_and_cart_price = amount_user_paid - cart.overall_cart_price_in_cents()
     if difference_in_money_inserted_and_cart_price >= 0:
-        if prompt_for_ingredients():
-            return
-        check_if_hot_items_in_cart()
         if difference_in_money_inserted_and_cart_price > 0:
+            if prompt_for_ingredients():
+                return
+            check_if_hot_items_in_cart()
             return_change_after_dispensing(difference_in_money_inserted_and_cart_price)
         else:
+            if prompt_for_ingredients():
+                return
+            check_if_hot_items_in_cart()
             print("Dispensing...")
             for i in tqdm(range(10)):
                 time.sleep(1)
