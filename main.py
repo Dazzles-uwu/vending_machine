@@ -703,7 +703,6 @@ def cancel_transaction_or_keep_previous_transaction():
             break
         elif reset_or_keep == "y":
             cart.reset_cart()
-            print(cart)
             new_transaction(True)
             break
         else:

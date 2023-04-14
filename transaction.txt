@@ -3,3 +3,7 @@ items,juice,tup,tea,payment,2300,date,Tuesday 11/April/2023 12:09
 items,tea,payment,220,date,Wednesday 12/April/2023 23:58
 items,7up,coffee,payment,2410,date,Thursday 13/April/2023 00:03
 items,juice,tea,payment,660,date,Thursday 13/April/2023 00:07
+items,7up,payment,700,date,Friday 14/April/2023 19:59
+items,coffee,tea,payment,1760,date,Friday 14/April/2023 20:57
+items,coffee,payment,220,date,Friday 14/April/2023 21:28
+items,coke,payment,220,date,Friday 14/April/2023 22:28

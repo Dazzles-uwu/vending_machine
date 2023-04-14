@@ -1,5 +1,5 @@
-coffee,stock,297,price,2.2
-tea,stock,298,price,2.2
+coffee,stock,293,price,2.2
+tea,stock,293,price,2.2
 juice,stock,297,price,2.2
-coke,stock,299,price,2.2
-7up,stock,295,price,3.5
+coke,stock,298,price,2.2
+7up,stock,0,price,3.5
