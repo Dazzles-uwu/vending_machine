@@ -1,3 +1,2 @@
 sugar,297
-matcha,297
-milk,0
+milk,297

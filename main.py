@@ -152,7 +152,7 @@ class Cart:
                         quantity_to_be_added = input("Quantity to be ADDED")
                         if quantity_to_be_added.isdigit():
                             # checks if there are enough stocks to buy
-                            if items_available[item_chosen]["stock"] - int(quantity_to_be_added) >= 0:
+                            if items_available[item_chosen]["stock"] - int(quantity_to_be_added) > 0:
                                 # if item has already been added to the cart, simply add the quantity user wants
                                 if item_chosen in self.cart_items.keys():
                                     self.cart_items[item_chosen]["quantity"] += int(quantity_to_be_added)
@@ -503,6 +503,43 @@ def return_change_after_dispensing(expected_change):
         continue_and_finalise_purchase()
 
 
+def boiling():
+    print("Boiling....")
+    for i in tqdm(range(10)):
+        time.sleep(1)
+
+
+def mixing_ingredients():
+    print("Mixing Ingredients....")
+    for i in tqdm(range(10)):
+        time.sleep(1)
+
+
+def ask_user_auto_or_manual_sugar_input():
+    # if there is enough sugar, ask whether to mix manually or automatically.
+    has_enough_sugar = False
+    for keys, values in ingredient.get_ingredients().items():
+        if keys == "sugar":
+            if int(values) - 1 >= 0:
+                has_enough_sugar = True
+
+    if has_enough_sugar:
+        while True:
+            print("\nHow would you like to mix your sugar?")
+            print("1. Manually")
+            print("2. Automatically")
+            option = input("Enter your response here: ")
+            if option == "1":
+                print("\nPlease Mix your sugar into your hot items!")
+                input("Enter anything when you are done: ")
+                break
+            elif option == "2":
+                print("\nWe will add your sugar automatically, please kindly wait...")
+                break
+            else:
+                print("Invalid choice, please enter '1' or '2' only")
+
+
 def check_if_hot_items_in_cart():
     hot_item = False
     for item_name in cart.get_cart().keys():
@@ -510,17 +547,12 @@ def check_if_hot_items_in_cart():
             hot_item = True
 
     if hot_item:
-        print("Boiling....")
-        for i in tqdm(range(10)):
-            time.sleep(1)
-
-        print("Mixing Ingredients....")
-        for i in tqdm(range(10)):
-            time.sleep(1)
-
-        print("Your Hot item has been created, enjoy")
+        boiling()
+        ask_user_auto_or_manual_sugar_input()
+        mixing_ingredients()
         # take away ingredient
         ingredient.take_away_ingredient()
+        print("Your Hot item has been created, enjoy")
 
 
 def prompt_for_ingredients():

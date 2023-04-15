@@ -7,3 +7,10 @@ items,7up,payment,700,date,Friday 14/April/2023 19:59
 items,coffee,tea,payment,1760,date,Friday 14/April/2023 20:57
 items,coffee,payment,220,date,Friday 14/April/2023 21:28
 items,coke,payment,220,date,Friday 14/April/2023 22:28
+items,coffee,payment,220,date,Saturday 15/April/2023 14:28
+items,juice,coffee,payment,880,date,Saturday 15/April/2023 15:21
+items,coffee,payment,440,date,Saturday 15/April/2023 15:38
+items,coffee,payment,220,date,Saturday 15/April/2023 15:39
+items,coffee,payment,660,date,Saturday 15/April/2023 15:59
+items,coke,coffee,payment,660,date,Saturday 15/April/2023 16:42
+items,tea,coffee,payment,1540,date,Saturday 15/April/2023 16:49
