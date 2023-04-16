@@ -14,3 +14,5 @@ items,coffee,payment,220,date,Saturday 15/April/2023 15:39
 items,coffee,payment,660,date,Saturday 15/April/2023 15:59
 items,coke,coffee,payment,660,date,Saturday 15/April/2023 16:42
 items,tea,coffee,payment,1540,date,Saturday 15/April/2023 16:49
+items,coffee,payment,440,date,Sunday 16/April/2023 15:41
+items,coffee,coke,payment,440,date,Sunday 16/April/2023 15:44

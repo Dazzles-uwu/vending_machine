@@ -1,2 +1,2 @@
-sugar,297
-milk,297
+sugar,295
+milk,295

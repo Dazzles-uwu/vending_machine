@@ -3,6 +3,7 @@ import time
 from tqdm import tqdm
 
 
+# This class is used for storing how much money customers have inserted inside the vending machine
 class Payment:
     def __init__(self):
         self.inserted_coin = 0
@@ -23,6 +24,7 @@ class Payment:
         self.inserted_coin = 0
 
 
+# This class is used to keep the values of the items. Like name, stock and price
 class Item:
     def __init__(self):
         with open('items.txt', 'r') as f:
@@ -37,12 +39,15 @@ class Item:
                 price_value = x[4]
                 self.items[item_name] = {stock_key: int(stock_value), price_key: float(price_value)}
 
+    # Print the item object
     def __str__(self):
         return f"Item Dictionary: {self.items}\n"
 
+    # Getter method
     def get_items(self):
         return self.items
 
+    # The function to display for the Users
     def display_list_of_products(self):
         print("\nList of Vending Machine Products")
         for keys, values in self.items.items():
@@ -51,8 +56,8 @@ class Item:
             else:
                 print(f'{keys.capitalize():8} Available Amount:{values["stock"]: 7}    '
                       f'Price: ${"%.2f" % values["price"]}')
-        print("\n")
 
+    # Once transaction is ended and finalised, we need to update the items quantity and write to our file
     def update_item_stock(self, cart_items):
         # Check cart and see what gets updated
         for key in cart_items:
@@ -67,6 +72,7 @@ class Item:
                 file.write(str(key) + "," + "stock" + "," + str(value["stock"]) + "," + "price" + ","
                            + str(value["price"]) + "\n")
 
+    # Resetting the amount of items the machine currently have to be 300
     def reset_items_to_default(self):
         with open('items.txt', 'w') as file:
             for key, value in self.items.items():
@@ -86,6 +92,7 @@ class Item:
                 self.items[item_name] = {stock_key: int(stock_value), price_key: float(price_value)}
 
 
+# This class keeps items the customers are wanting to buy
 class Cart:
     def __init__(self):
         self.cart_items = {}
@@ -102,6 +109,7 @@ class Cart:
     def reset_cart(self):
         self.cart_items.clear()
 
+    # Return the overall price of the items in the cart
     def overall_cart_price_in_cents(self):
         overall_price = 0
         for keys, values in self.cart_items.items():
@@ -120,6 +128,7 @@ class Cart:
                 overall_price += values["price"] * int(values["quantity"])
             print("Total Price: $", "%.2f" % overall_price)
 
+    # The items users have purchased
     def dispensed_items(self):
         print("\nDispensing the following item/s: ")
         for keys, values in self.cart_items.items():
@@ -199,6 +208,7 @@ class Cart:
                     print("Not a Valid item")
 
 
+# The machine class contains the status of the machine and the coins inside its storage
 class Machine:
     def __init__(self):
         with open('machine.txt', 'r') as f:
@@ -218,6 +228,7 @@ class Machine:
     def get_machine_status(self):
         return self.status
 
+    # This method is used to set the vending machine's status to 'maintenance'
     def set_maintenance_status(self):
         with open('machine.txt', 'r') as file:
             # read a list of lines into data
@@ -237,6 +248,7 @@ class Machine:
             self.status = data[0].strip()
             self.coins = int(data[1].strip())
 
+    # This method is used to set the vending machine's status to 'working'
     def set_working_status(self):
         with open('machine.txt', 'r') as file:
             # read a list of lines into data
@@ -256,6 +268,7 @@ class Machine:
             self.status = data[0].strip()
             self.coins = int(data[1].strip())
 
+    # Update the machines money after user has purchased
     def give_change_to_consumers(self, change_amount):
         self.coins -= change_amount
         with open('machine.txt', 'r') as file:
@@ -275,6 +288,7 @@ class Machine:
             self.status = data[0].strip()
             self.coins = int(data[1].strip())
 
+    # Update the machines money
     def update_to_add_coin_stock(self, inserted_coins):
         with open('machine.txt', 'r') as file:
             # read a list of lines into data
@@ -294,6 +308,7 @@ class Machine:
             self.status = data[0].strip()
             self.coins = int(data[1].strip())
 
+    # Resetting the amount of money the machine has to $500
     def reset_items_to_default(self):
         with open('machine.txt', 'w') as file:
             file.writelines(self.status + "\n" + "50000")
@@ -305,6 +320,7 @@ class Machine:
             self.coins = int(data[1].strip())
 
 
+# The transaction class keeps all the transaction history
 class Transaction:
     def __init__(self):
         with open('transaction.txt', 'r') as f:
@@ -339,6 +355,7 @@ class Transaction:
     def get_transaction(self):
         return self.transaction_dict
 
+    # Once an item has been purchased, add them to the transaction history
     def record_transaction(self, cart_item_keys, cart_price):
         with open('transaction.txt', 'a') as file:
             string_of_items_in_cart = (','.join(cart_item_keys)).strip()
@@ -375,6 +392,7 @@ class Transaction:
                 key_id += 1
 
 
+# Keeps information on all the ingredients available in the vending machine
 class Ingredient:
     def __init__(self):
         with open('ingredients.txt', 'r') as f:
@@ -387,6 +405,7 @@ class Ingredient:
     def get_ingredients(self):
         return dict(self.ingredient_dict)
 
+    # Once a user purchases the items that need ingredients, we remove it and update to file
     def take_away_ingredient(self):
         for key, value in self.ingredient_dict.items():
             if value > 0:
@@ -396,6 +415,7 @@ class Ingredient:
             for key, value in self.ingredient_dict.items():
                 file.write(str(key) + "," + str(value) + "\n")
 
+    # Reset our ingredient items to 300 when an admin asks to reset
     def reset_items_to_default(self):
         with open('ingredients.txt', 'w') as file:
             for key, value in self.ingredient_dict.items():
@@ -409,6 +429,7 @@ class Ingredient:
                 self.ingredient_dict[temp_list_var[0]] = int(temp_list_var[1])
 
 
+# Global variables
 items = Item()
 user_payment = Payment()
 cart = Cart()
@@ -417,6 +438,7 @@ transaction = Transaction()
 ingredient = Ingredient()
 
 
+# Ask user for which coin they would like to purchase and save them using Payment class
 def insert_coins_into_machine():
     global user_payment
     while True:
@@ -448,6 +470,7 @@ def insert_coins_into_machine():
             print("Please enter a valid input")
 
 
+# Refunding user's money, whether they cancel, reset, not enough money or simply want to refund
 def refund_user_money():
     money_to_refund = user_payment.current_coin_amount_in_dollars()
     print("\n$" + money_to_refund, "has been refunded back to you.")
@@ -455,6 +478,7 @@ def refund_user_money():
     user_payment.reset_payment()
 
 
+# The options user can choose when the inserted money is insufficient
 def user_options_when_inserted_money_is_inefficient():
     while True:
         print("WARNING!\nYou have not entered required amount into the vending machine")
@@ -475,6 +499,7 @@ def user_options_when_inserted_money_is_inefficient():
             print("Invalid options")
 
 
+# Responsible to give change back to the user
 def return_change_after_dispensing(expected_change):
     # Check how much money is in the machine
     machine_coin_stock_availability = machine.check_coin_amount_in_machine_in_cents() - expected_change
@@ -503,18 +528,21 @@ def return_change_after_dispensing(expected_change):
         continue_and_finalise_purchase()
 
 
+# print waiting bar function
 def boiling():
     print("Boiling....")
     for i in tqdm(range(10)):
         time.sleep(1)
 
 
+# print waiting bar function
 def mixing_ingredients():
     print("Mixing Ingredients....")
     for i in tqdm(range(10)):
         time.sleep(1)
 
 
+# prompt user to choose whether they would like sugar to be added manually or automatically
 def ask_user_auto_or_manual_sugar_input():
     # if there is enough sugar, ask whether to mix manually or automatically.
     has_enough_sugar = False
@@ -540,6 +568,7 @@ def ask_user_auto_or_manual_sugar_input():
                 print("Invalid choice, please enter '1' or '2' only")
 
 
+# Action some to do if there is any hot items inside the cart
 def check_if_hot_items_in_cart():
     hot_item = False
     for item_name in cart.get_cart().keys():
@@ -555,6 +584,7 @@ def check_if_hot_items_in_cart():
         print("Your Hot item has been created, enjoy")
 
 
+# What users would like to do when there are no more ingredients left inside the machine
 def prompt_for_ingredients():
     no_ingredient = False
     for keys, values in ingredient.get_ingredients().items():
@@ -589,6 +619,7 @@ def prompt_for_ingredients():
     return no_ingredient
 
 
+# Where the inserted coin validation is done, compares inserted coin with the price of the items in cart
 def validate_coins():
     print("Checking INSERTED COINS NOW")
     amount_user_paid = user_payment.current_coin_amount_in_cents()
@@ -623,6 +654,7 @@ def validate_coins():
         user_options_when_inserted_money_is_inefficient()
 
 
+# Current user's payment
 def current_user_payment():
     print("\nCurrent Inserted Payment: " + "$" + user_payment.current_coin_amount_in_dollars(), "\n")
 
@@ -674,6 +706,7 @@ def new_transaction(is_new_transaction: bool):
     while True:
         cart.chosen_items_plus_running_cost()
         items.display_list_of_products()
+        print("\n")
         print("Available Options")
         print("1. Add item to Cart")
         print("2. Remove item from Cart")
@@ -688,6 +721,7 @@ def new_transaction(is_new_transaction: bool):
             cart.chosen_items_plus_running_cost()
             cart.add_or_remove_items_from_cart(option, items.get_items())
         elif option == "3":
+            print("\nList of Products you would like to be displayed:")
             items.display_list_of_products()
         elif option == "4":
             if cart.get_cart():
@@ -714,6 +748,7 @@ def new_transaction(is_new_transaction: bool):
             print("Invalid choice")
 
 
+# List of Options for the main menu
 def main_menu_list():
     print("\nYou are in the Main Menu!")
     print("Please choose one of the following options")
@@ -725,6 +760,7 @@ def main_menu_list():
     print("6. Exit\n")
 
 
+# When an item is saved inside the cart, ask users whether they would like to keep the item or simply reset
 def cancel_transaction_or_keep_previous_transaction():
     # prompt the user to choose whether keep previous transaction or start a new one
     while True:
@@ -741,6 +777,7 @@ def cancel_transaction_or_keep_previous_transaction():
             print("unknown input, please enter (y/n)")
 
 
+# Change the status of the machine to 'working' or 'maintenance'
 def change_machine_status():
     while True:
         print("\nChanging Machine Status Menu\n")
@@ -760,6 +797,7 @@ def change_machine_status():
             print("""Invalid choice, please answer with the character "y" or "n" only""")
 
 
+# Admin function to provide the statistical report
 def provide_statistical_report():
     transaction_history = transaction.get_transaction()
 
@@ -776,6 +814,7 @@ def provide_statistical_report():
                 print("Date Purchased:", transaction_history[transaction_id][key_name])
 
 
+# Resetting items, coins and ingredients for the vending machine's admin
 def reset_operation_for_vending_machine():
     while True:
         print("\nWe are about to reset your machine.")
@@ -845,8 +884,6 @@ def startup():
     display_main_menu()
 
 
-# Press the green button in the gutter to run the script.
+# Necessary main function
 if __name__ == '__main__':
     startup()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
