@@ -771,7 +771,7 @@ def provide_statistical_report():
                 result_string = ",".join(transaction_history[transaction_id][key_name])
                 print("Items Purchased:", result_string)
             elif key_name == "payment":
-                print("Transaction Amount: $" + str((int(transaction_history[transaction_id][key_name])/100)))
+                print("Transaction Amount: $" + str("%.2f" % ((int(transaction_history[transaction_id][key_name]))/100)))
             elif key_name == "date":
                 print("Date Purchased:", transaction_history[transaction_id][key_name])
 
